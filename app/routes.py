@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, jsonify
 
-from app.certificate.slip import certificate, stamp
+from app.certificate.slip import certificate, ledger, stamp
 from app.source import read_request
 from app.vault.record import deposit, index, volume
 from app.workflow import steps
@@ -63,3 +63,9 @@ def download(run):
     result = jsonify(certificate(current_app.vault,run))
     result.headers['Content-Disposition'] = f'attachment; filename="license-{run}.json"'
     return result
+
+
+@rights.get('/api/ledger')
+@rights.get('/api/volumes/<run>/ledger')
+def postings(run=None):
+    return {'postings': ledger(current_app.vault, run)}

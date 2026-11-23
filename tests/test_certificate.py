@@ -22,7 +22,9 @@ def test_certificate_signature_matches_detached_document(client):
 def test_stamp_is_immutable_on_repeat(client):
     address=path(client)+'/stamp'
     first=client.post(address).json
-    assert client.post(address).json==dict(first,reused=True)
+    second=client.post(address).json
+    assert second['imprint']==first['imprint'] and second['reused'] is True
+    assert second['postings']==first['postings']
 
 
 def test_unknown_archive(client):

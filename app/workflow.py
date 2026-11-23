@@ -18,7 +18,7 @@ def steps(raw, until='balance', register=None):
     results['licenses'] = decide(results['registry']['records'],authority['terms'])
     if until == 'licenses':
         return results
-    results['pages'] = allocate(results['licenses']['verdicts'],authority['pools'])
+    results['pages'] = allocate(results['licenses']['verdicts'], authority['pools'], authority['terms'])
     if until != 'pages':
         results['balance'] = reconcile(results['intake'],results['pages'])
     return results

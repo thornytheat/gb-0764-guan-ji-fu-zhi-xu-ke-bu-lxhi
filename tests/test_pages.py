@@ -39,6 +39,7 @@ def test_cancel_cannot_cross_quota_year(dirty):
     rows=dirty['licenses']['verdicts']
     source=next(row for row in rows if row['entry']=='C01')
     cancel=next(row for row in rows if row['entry']=='R01')
-    result=allocate([source,dict(cancel,received='2027-01-01')],load_register()['authority']['pools'])
+    result=allocate([source,dict(cancel,received='2027-01-01')],load_register()['authority']['pools'],
+                    load_register()['authority']['terms'])
     assert result['reversals'][0]['reason']=='BOUNDARY'
     assert result['accounts']['2026/NORTH']['used']==6

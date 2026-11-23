@@ -32,5 +32,14 @@ def check_authority(authority):
                 and journal and journal['issn']==term['issn'] and term['pool'] in authority['pools']
                 and type(term['revision']) is int and term['revision']>=1 and term['id'] not in versions):
             raise ValueError(f"条款配置无效: {term['id']}")
+        if term.get('forbid') and term['scope'] != 'institution':
+            raise ValueError(f"禁印条款只能挂在机构专属条款上: {term['id']}")
+        covers = term.get('covers')
+        if covers is not None:
+            if not isinstance(covers, list) or not covers or not all(
+                    isinstance(span, list) and len(span) == 2 and type(span[0]) is int
+                    and type(span[1]) is int and journal['pages'][0] <= span[0] <= span[1] <= journal['pages'][1]
+                    for span in covers):
+                raise ValueError(f"条款页段覆盖无效: {term['id']}")
         versions.add(term['id'])
     return journals,institutions

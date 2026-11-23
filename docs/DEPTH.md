@@ -9,10 +9,10 @@
 | M1 授权材料采信 | 查看回执和隔离原因 | `GET/POST /api/intake` | `app/intake/receive.py` `app/intake/spec.py` | `tests/test_intake.py` |
 | M2 刊号与机构映射 | 查看旧刊号和机构对照 | `GET/POST /api/registry` | `app/registry/identify.py` `app/registry/rules.py` | `tests/test_registry.py` `tests/test_authority.py` |
 | M3 许可版本裁决 | 查当日条款候选 | `GET/POST /api/licenses` | `app/licenses/decide.py` `app/licenses/terms.py` | `tests/test_licenses.py` |
-| M4 拆页与额度占用 | 看并集、越界和退回额度 | `GET/POST /api/pages` | `app/pagination/ledger.py` `app/pagination/spans.py` | `tests/test_pages.py` |
-| M5 签发请求对账 | 复算许可页与有效额度 | `GET/POST /api/balance` | `app/register/balance.py` | `tests/test_balance.py` |
+| M4 拆页与额度占用 | 看并集、越界和退回额度 | `GET/POST /api/pages` | `app/pagination/ledger.py` `app/pagination/spans.py` `app/licenses/segments.py` | `tests/test_pages.py` `tests/test_segments.py` |
+| M5 签发请求对账 | 复算许可页与有效额度 | `GET/POST /api/balance` | `app/register/balance.py` | `tests/test_balance.py` `tests/test_postings.py` |
 | M6 批次留档复跑 | 取回原归档快照 | `POST /api/volumes` | `app/vault/record.py` `app/vault/database.py` | `tests/test_vault.py` |
-| M7 许可证据签发 | 签发可复验凭证 | `POST /api/volumes/{id}/stamp` | `app/certificate/slip.py` | `tests/test_certificate.py` |
+| M7 许可证据签发 | 签发可复验凭证 | `POST /api/volumes/{id}/stamp` | `app/certificate/slip.py` | `tests/test_certificate.py` `tests/test_postings.py` |
 
 ## 陷阱登记
 
@@ -27,5 +27,9 @@
 | TRAP-19 | 专属和公开同日适用 | 高修订公开版覆盖专属 | 先比较授权范围 | `app/licenses/terms.py` | `tests/test_licenses.py::test_special_beats_public_high_revision` |
 | TRAP-23 | 请求在截止日 | 到期条款多算一天 | 左闭右开 | `app/licenses/terms.py` | `tests/test_licenses.py::test_closed_at_valid_until` |
 | TRAP-25 | 两版时间重叠 | 按列表顺序选版 | 高修订优先，同级冲突待证 | `app/licenses/decide.py` | `tests/test_licenses.py::test_overlapping_versions_and_tie` |
+| TRAP-26 | 一单跨多页段，专属只覆盖部分页 | 整单套用一条条款，未覆盖页被拒或被专属误签 | 按覆盖边界切片段逐段裁决，未覆盖页回落联盟/公开 | `app/licenses/segments.py` | `tests/test_segments.py::test_exclusive_terms_cover_only_named_segments` |
+| TRAP-27 | 专属条款禁印某几段 | 整单照公开许可把禁印页也签出 | 禁印段判 `FORBIDDEN`，不回落任何池 | `app/licenses/segments.py` `app/licenses/terms.py` | `tests/test_segments.py::test_forbidden_pages_are_not_signed_under_public_license` |
+| TRAP-28 | 一单动用多个额度池 | 撤销时整单退回一个池 | 按 `pool_pages` 逐池实扣、`refunds` 逐池原页退回 | `app/pagination/ledger.py` | `tests/test_postings.py::test_cancel_refunds_only_the_actually_debited_pages_per_pool` |
+| TRAP-29 | 两人并发落印或重试同一卷 | 重复扣页、台账重复 | 单事务写印鉴与 `postings`，`(卷号,池)` 唯一约束幂等 | `app/certificate/slip.py` `app/vault/database.py` | `tests/test_postings.py::test_concurrent_stamps_commit_postings_once` |
 
 58 申请页 = 32 许可页 + 18 拒绝页 + 8 待证页。C01 已许可 6 页，R01 归还 6 页，因此有效占用 26 页。申请页计在订单内部去重，各不同订单独立计数。

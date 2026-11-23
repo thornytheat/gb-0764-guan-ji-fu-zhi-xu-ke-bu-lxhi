@@ -34,6 +34,9 @@ th {position:sticky;top:0;background:var(--page);color:var(--muted)}
 small,output {overflow-wrap:anywhere}
 details {padding:7px 0;border-bottom:1px solid var(--line)}
 summary {cursor:pointer}
+table.segments {margin:10px 0 4px;font-size:13px;background:var(--wash)}
+table.segments th,table.segments td {padding:4px 7px}
+table.segments small {color:var(--muted)}
 footer {display:flex;justify-content:space-between;gap:12px;padding:13px clamp(16px,5vw,72px);border-top:1px solid var(--line);color:var(--muted);font-size:13px}
 textarea {width:100%;resize:vertical}
 @media(max-width:850px) {.folio{--rail:136px;--gap:17px}.folios{grid-template-columns:minmax(0,1fr)}}
